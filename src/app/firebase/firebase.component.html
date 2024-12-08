@@ -1,0 +1,496 @@
+<header class="bg-primary p-3 text-center">
+  <h1 class="fs-3 fw-bold text-light">FIREBASE CRUD</h1>
+</header>
+
+<!-- firebase.component.html -->
+<div class="container-fluid py-5">
+  <div class="row">
+    <!-- Left Column - Add/Edit Form -->
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">
+            {{ product.id ? "Update Product" : "Add New Product" }}
+          </h4>
+        </div>
+        <div class="card-body">
+          <form
+            (ngSubmit)="onSubmit()"
+            #productForm="ngForm"
+            class="needs-validation"
+          >
+            <input type="hidden" [(ngModel)]="product.id" name="id" />
+            <div class="mb-3">
+              <label for="name" class="form-label">Product Name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="name"
+                required
+                [(ngModel)]="product.name"
+                name="name"
+                placeholder="Enter product name"
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="price" class="form-label">Price</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="price"
+                  required
+                  [(ngModel)]="product.price"
+                  name="price"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="description" class="form-label">Description</label>
+              <textarea
+                class="form-control"
+                id="description"
+                rows="3"
+                required
+                [(ngModel)]="product.description"
+                name="description"
+                placeholder="Product description"
+              ></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="image" class="form-label">Image URL</label>
+              <input
+                type="text"
+                class="form-control"
+                id="image"
+                required
+                [(ngModel)]="product.image"
+                name="image"
+                placeholder="https://example.com/image.jpg"
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="category" class="form-label">Category</label>
+              <input
+                type="text"
+                class="form-control"
+                id="category"
+                required
+                [(ngModel)]="product.category"
+                name="category"
+                placeholder="Enter category"
+              />
+            </div>
+
+            <button
+              type="submit"
+              [disabled]="!productForm.form.valid"
+              class="btn btn-primary w-100"
+            >
+              {{ product.id ? "Update Product" : "Add Product" }}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column - Product List -->
+    <div class="col-md-8">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <div class="d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Products</h4>
+            <div class="btn-group">
+              <button
+                class="btn btn-outline-primary"
+                (click)="viewMode = 'grid'"
+                [class.active]="viewMode === 'grid'"
+              >
+                <i class="bi bi-grid"></i>
+              </button>
+              <button
+                class="btn btn-outline-primary"
+                (click)="viewMode = 'list'"
+                [class.active]="viewMode === 'list'"
+              >
+                <i class="bi bi-list"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- Grid View -->
+          <div *ngIf="viewMode === 'grid'" class="row g-4">
+            <div *ngFor="let p of products" class="col-md-6 col-lg-4">
+              <div class="card h-100 shadow-sm product-card">
+                <img [src]="p.image" class="card-img-top" [alt]="p.name" />
+                <div class="card-body">
+                  <h5 class="card-title">{{ p.name }}</h5>
+                  <p class="card-text text-muted">{{ p.category }}</p>
+                  <div
+                    class="d-flex justify-content-between align-items-center"
+                  >
+                    <span class="badge bg-primary fs-6">${{ p.price }}</span>
+                    <div class="btn-group">
+                      <button
+                        class="btn btn-sm btn-outline-primary"
+                        (click)="setSelectedProduct(p)"
+                        data-bs-toggle="modal"
+                        data-bs-target="#productModal"
+                      >
+                        View
+                      </button>
+                      <button
+                        class="btn btn-sm btn-outline-secondary"
+                        (click)="editProduct(p)"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        class="btn btn-sm btn-outline-danger"
+                        (click)="deleteProduct(p.id)"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- List View -->
+          <div *ngIf="viewMode === 'list'" class="list-group list-group-flush">
+            <div
+              *ngFor="let p of products"
+              class="list-group-item product-list-item"
+            >
+              <div class="row align-items-center g-3">
+                <div class="col-auto">
+                  <img
+                    [src]="p.image"
+                    class="rounded"
+                    width="80"
+                    [alt]="p.name"
+                  />
+                </div>
+                <div class="col">
+                  <h5 class="mb-1">{{ p.name }}</h5>
+                  <p class="mb-1 text-muted">{{ p.category }}</p>
+                </div>
+                <div class="col-auto">
+                  <span class="badge bg-primary fs-6 me-2">${{ p.price }}</span>
+                  <div class="btn-group">
+                    <button
+                      class="btn btn-sm btn-outline-primary"
+                      (click)="setSelectedProduct(p)"
+                      data-bs-toggle="modal"
+                      data-bs-target="#productModal"
+                    >
+                      View
+                    </button>
+                    <button
+                      class="btn btn-sm btn-outline-secondary"
+                      (click)="editProduct(p)"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      class="btn btn-sm btn-outline-danger"
+                      (click)="deleteProduct(p.id)"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Loading Skeleton -->
+          <div *ngIf="isLoading" class="row g-4">
+            <div class="col-md-4" *ngFor="let i of [1, 2, 3]">
+              <div class="card shadow-sm">
+                <div class="placeholder-glow">
+                  <div class="placeholder w-100" style="height: 200px"></div>
+                </div>
+                <div class="card-body">
+                  <h5 class="placeholder-glow">
+                    <span class="placeholder col-6"></span>
+                  </h5>
+                  <p class="placeholder-glow">
+                    <span class="placeholder col-7"></span>
+                    <span class="placeholder col-4"></span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enhanced Modal -->
+  <div class="modal fade" id="productModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0">
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+          ></button>
+        </div>
+        <div class="modal-body" *ngIf="selectedProduct">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <img
+                [src]="selectedProduct.image"
+                class="img-fluid rounded shadow-sm"
+                [alt]="selectedProduct.name"
+              />
+            </div>
+            <div class="col-md-6">
+              <h3>{{ selectedProduct.name }}</h3>
+              <div class="mb-3">
+                <span class="badge bg-primary fs-5"
+                  >${{ selectedProduct.price }}</span
+                >
+                <span class="badge bg-secondary ms-2">{{
+                  selectedProduct.category
+                }}</span>
+              </div>
+              <p class="text-muted">{{ selectedProduct.description }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Product Modal -->
+  <div
+    class="modal fade"
+    id="editProductModal"
+    tabindex="-1"
+    aria-labelledby="editProductModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editProductModalLabel">
+            {{ product.id ? "Update Product" : "Add New Product" }}
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <form
+            (ngSubmit)="onSubmit()"
+            #productForm="ngForm"
+            class="needs-validation"
+          >
+            <input type="hidden" [(ngModel)]="product.id" name="id" />
+            <div class="mb-3">
+              <label for="name" class="form-label">Product Name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="name"
+                required
+                [(ngModel)]="product.name"
+                name="name"
+                placeholder="Enter product name"
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="price" class="form-label">Price</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="price"
+                  required
+                  [(ngModel)]="product.price"
+                  name="price"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="description" class="form-label">Description</label>
+              <textarea
+                class="form-control"
+                id="description"
+                rows="3"
+                required
+                [(ngModel)]="product.description"
+                name="description"
+                placeholder="Product description"
+              ></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="image" class="form-label">Image URL</label>
+              <input
+                type="text"
+                class="form-control"
+                id="image"
+                required
+                [(ngModel)]="product.image"
+                name="image"
+                placeholder="https://example.com/image.jpg"
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="category" class="form-label">Category</label>
+              <input
+                type="text"
+                class="form-control"
+                id="category"
+                required
+                [(ngModel)]="product.category"
+                name="category"
+                placeholder="Enter category"
+              />
+            </div>
+
+            <button
+              type="submit"
+              [disabled]="!productForm.form.valid"
+              class="btn btn-primary w-100"
+            >
+              Update Product
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="bg-white py-5 mt-5 shadow-sm border-top">
+  <div class="container">
+    <div class="row">
+      <div class="col-12 text-center">
+        <h3 class="fw-bold mb-4 text-primary">KWATRO ALAS</h3>
+        <div class="mb-4">
+          <h5 class="text-uppercase fw-light text-dark">Team Members</h5>
+          <hr
+            class="mx-auto"
+            style="width: 50px; border-top: 2px solid #0d6efd"
+          />
+          <div class="row justify-content-center mt-4">
+            <div class="col-md-8">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <div
+                    class="member-card p-3 border-start border-primary border-3 bg-light"
+                  >
+                    <p class="fw-bold mb-0 text-dark">NELSON JAY VENERACION</p>
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <div
+                    class="member-card p-3 border-start border-primary border-3 bg-light"
+                  >
+                    <p class="fw-bold mb-0 text-dark">
+                      MARK EMMANUEL DELA CRUZ
+                    </p>
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <div
+                    class="member-card p-3 border-start border-primary border-3 bg-light"
+                  >
+                    <p class="fw-bold mb-0 text-dark">ELIEZER ROXAS III</p>
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <div
+                    class="member-card p-3 border-start border-primary border-3 bg-light"
+                  >
+                    <p class="fw-bold mb-0 text-dark">ALLAN JEXTER AREOLA</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mb-4">
+          <h5 class="text-uppercase fw-light text-dark">Section</h5>
+          <p class="fs-5 text-primary fw-bold">BSIT - 4E</p>
+        </div>
+        <div class="school-info">
+          <h5 class="text-uppercase fw-light mb-3 text-dark">Institution</h5>
+          <p class="fs-6 fw-bold text-dark">
+            NUEVA ECIJA UNIVERSITY OF SCIENCE AND TECHNOLOGY
+          </p>
+        </div>
+        <div class="mt-4 pt-4 border-top">
+          <p class="small text-muted mb-0">
+            © 2024 Kwatro Alas. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .member-card {
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  .member-card:hover {
+    transform: translateX(10px);
+    background-color: #f8f9fa !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  hr {
+    opacity: 0.2;
+  }
+
+  .product-card {
+    transition: transform 0.2s;
+  }
+
+  .product-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .product-list-item {
+    transition: background-color 0.2s;
+  }
+
+  .product-list-item:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+  }
+
+  .card {
+    border-radius: 0.5rem;
+  }
+
+  .btn-group .btn {
+    padding: 0.25rem 0.5rem;
+  }
+</style>
